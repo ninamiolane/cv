@@ -62,6 +62,9 @@
 %for lists within experience section
 \usepackage{enumitem}
 
+\usepackage{xparse}   % for \NewDocumentCommand (safe on older LaTeX)
+
+
 % centered version of 'X' col. type
 \newcolumntype{C}{>{\centering\arraybackslash}X} 
 
@@ -76,19 +79,30 @@
 \usepackage{multicol}
 \usepackage{multirow}
 
+\usepackage{etoolbox} % for \ifblank
+
+
 %CV Sections inspired by: 
 %http://stefano.italians.nl/archives/26
 \titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
 \titlespacing{\section}{0pt}{10pt}{10pt}
 
 %for publications
-\usepackage[style=authoryear,sorting=ynt, maxbibnames=2]{biblatex}
+\usepackage[style=numeric,sorting=ydnt]{biblatex}
+% to print all authors
+\AtBeginBibliography{\renewcommand*{\finalnamedelim}{\addcomma\space}}
+\ExecuteBibliographyOptions{maxnames=99,minnames=99}
+% after loading biblatex
+\usepackage{xstring}
+\renewcommand*{\mkbibnamefamily}[1]{%
+  \IfStrEq{#1}{Miolane}{\textbf{#1}}{#1}%
+}
 
 %Setup hyperref package, and colours for links
 \usepackage[unicode, draft=false]{hyperref}
 \definecolor{linkcolour}{rgb}{0,0.2,0.6}
 \hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour}
-\addbibresource{citations.bib}
+\addbibresource{myrefs.bib}
 \setlength\bibitemsep{1em}
 
 %for social icons
@@ -123,6 +137,59 @@
 
 
 
+%%%%% itemize
+
+\ExplSyntaxOn
+\ior_new:N \l__svc_ior
+\tl_new:N  \l__svc_line_tl
+
+% pattern: only whitespace (incl. NBSP/NNBSP) -> blank
+\cs_new:Npn \__svc_blank_p:n #1
+  {
+    \regex_match_p:nn { \A [\s\x{00A0}\x{202F}]* \Z } {#1}
+  }
+
+\cs_new_protected:Npn \__svc_itemize_file:n #1
+  {
+    \begingroup
+      \small
+      \begin{itemize}[leftmargin=*,itemsep=0.2em,topsep=0.2em,parsep=0pt,partopsep=0pt]
+        \ior_open:Nn \l__svc_ior {#1}
+
+        % Prefer string-mapping (available in current LaTeX kernel)
+        \cs_if_exist:NTF \ior_str_map_inline:Nn
+          {
+            \ior_str_map_inline:Nn \l__svc_ior
+              {
+                % ##1 is a string line (no \par surprises)
+                \regex_match:nnTF { \A [\s\x{00A0}\x{202F}]* \Z } {##1}
+                  { } % blank -> skip
+                  { \item \tl_trim_spaces:n {##1} }
+              }
+          }
+          {
+            % Fallback for older kernels: convert tokens to a string first
+            \ior_map_inline:Nn \l__svc_ior
+              {
+                \tl_set:Nx \l__svc_line_tl { \tl_to_str:n {##1} }
+                \regex_match:nnTF { \A [\s\x{00A0}\x{202F}]* \Z } { \l__svc_line_tl }
+                  { } % blank -> skip
+                  { \item \tl_trim_spaces:V \l__svc_line_tl }
+              }
+          }
+
+        \ior_close:N \l__svc_ior
+      \end{itemize}
+    \endgroup
+  }
+
+% User macro
+\NewDocumentCommand{\itemizefile}{m}
+  { \__svc_itemize_file:n {#1} }
+\ExplSyntaxOff
+
+
+
 %----------------------------------------------------------------------------------------
 %	BEGIN DOCUMENT
 %----------------------------------------------------------------------------------------
@@ -134,82 +201,57 @@
 %----------------------------------------------------------------------------------------
 %	TITLE
 %----------------------------------------------------------------------------------------
-
-% \begin{tabularx}{\linewidth}{ @{}X X@{} }
-% \huge{Test Name Test}\vspace{2pt} & \hfill \emoji{incoming-envelope} email@email.com \\
-% \raisebox{-0.05\height}\faGithub\ username \ | \
-% \raisebox{-0.00\height}\faLinkedin\ username \ | \ \raisebox{-0.05\height}\faGlobe \ mysite.com  & \hfill \emoji{calling} number
-% \end{tabularx}
-
 \begin{tabularx}{\linewidth}{@{} C @{}}
-\Huge{Your Name} \\[7.5pt]
-\href{https://github.com/username}{\raisebox{-0.05\height}\faGithub\ username} \ $|$ \ 
-\href{https://linkedin.com/in/username}{\raisebox{-0.05\height}\faLinkedin\ username} \ $|$ \ 
-\href{https://mysite.com}{\raisebox{-0.05\height}\faGlobe \ mysite.com} \ $|$ \ 
-\href{mailto:email@mysite.com}{\raisebox{-0.05\height}\faEnvelope \ email@mysite.com} \ $|$ \ 
-\href{tel:+000000000000}{\raisebox{-0.05\height}\faMobile \ +00.00.000.000} \\
+\Huge{Nina Miolane, Ph.D.} \\[7.5pt]
+\href{https://github.com/ninamiolane}{\raisebox{-0.05\height}\faGithub\ ninamiolane} \ $|$ \ 
+\href{https://linkedin.com/in/ninamiolane}{\raisebox{-0.05\height}\faLinkedin\ ninamiolane} \ $|$ \ 
+\href{https://x.com/ninamiolane}{\raisebox{-0.05\height}\faTwitter\ @ninamiolane} \ $|$ \
+\href{https://bsky.app/profile/ninamiolane.bsky.social}{\raisebox{-0.05\height}\faGlobe\ @ninamiolane.bsky.social} \ ~~~ \
+\href{https://ninamiolane.com}{\raisebox{-0.05\height}\faGlobe~\ ninamiolane.com} \ $|$ \ 
+\href{mailto:ninamiolane@ucsb.edu}{\raisebox{-0.05\height}\faEnvelope \ ninamiolane@ucsb.edu} \ $|$ \ 
+\href{tel:+1452441603}{\raisebox{-0.05\height}\faMobile \ +1.415.244.1603} \\
 \end{tabularx}
 
 %----------------------------------------------------------------------------------------
-% EXPERIENCE SECTIONS
-%----------------------------------------------------------------------------------------
 
-%Interests/ Keywords/ Summary
 \section{Summary}
-This CV can also be automatically complied and published using GitHub Actions. For details, \href{https://github.com/jitinnair1/autoCV}{click here}.
-
-%Experience
-\section{Work Experience}
-
-\begin{jobshort}{Designation}{Jan 2021 - present}
-long long line of blah blah that will wrap when the table fills the column width long long line of blah blah that will wrap when the table fills the column width long long line of blah blah that will wrap when the table fills the column width long long line of blah blah that will wrap when the table fills the column width
-\end{jobshort}
-
-
-\begin{joblong}{Designation}{Mar 2019 - Jan 2021}
-\item long long line of blah blah that will wrap when the table fills the column width
-\item again, long long line of blah blah that will wrap when the table fills the column width but this time even more long long line of blah blah. again, long long line of blah blah that will wrap when the table fills the column width but this time even more long long line of blah blah
-\end{joblong}
-  
-%Projects
-\section{Projects}
-
-\begin{tabularx}{\linewidth}{ @{}l r@{} }
-\textbf{Some Project} & \hfill \href{https://some-link.com}{Link to Demo} \\[3.75pt]
-\multicolumn{2}{@{}X@{}}{long long line of blah blah that will wrap when the table fills the column width long long line of blah blah that will wrap when the table fills the column width long long line of blah blah that will wrap when the table fills the column width long long line of blah blah that will wrap when the table fills the column width}  \\
-\end{tabularx}
+\textbf{My research sits at the intersection of mathematics, artificial intelligence, and neuroscience.} I study the \textit{geometry of intelligence}: the mathematical rules that govern how brains and machines organize, transform, and adapt information to make sense of the world. Using these rules, I design next-generation AI that succeeds where most models fail—delivering up to $+66\%$ higher accuracy or the same accuracy with $10\times$ faster models—even when datasets are small, noisy, or complex (\textit{e.g.}, networks, and 3D shapes). I employ my models to build digital twins of the brain—integrating imaging, cognition, and molecular data to forecast brain health, detect disease early, and support personalized care. Breakthroughs from my research are regularly featured in the media.
 
 %----------------------------------------------------------------------------------------
-%	EDUCATION
+%	SECTIONS
 %----------------------------------------------------------------------------------------
 \section{Education}
-\begin{tabularx}{\linewidth}{@{}l X@{}}	
-2030 - present & PhD (Subject) at \textbf{University} \hfill \normalsize (GPA: 4.0/4.0) \\
+\input{sections/education}
 
-2023 - 2027 & Bachelor's Degree at \textbf{College} \hfill (GPA: 4.0/4.0) \\ 
+\section{Work Experience}
+\input{sections/work_experience}
 
-2022 & Class 12th Some Board \hfill  (Grades) \\
+\section{Projects}
+\input{sections/projects}
 
-2021 & Class 10th Some Board \hfill  (Grades) \\
-\end{tabularx}
+\section{Selected Talks (Full List: \url{www.ninamiolane.com/talks})}
 
-%----------------------------------------------------------------------------------------
-%	PUBLICATIONS
-%----------------------------------------------------------------------------------------
-\section{Publications}
-\begin{refsection}[citations.bib]
-\nocite{*}
-\printbibliography[heading=none]
-\end{refsection}
+\subsection*{2025}
+\itemizefile{sections/talks2025.tex}
+\subsection*{2024}
+\itemizefile{sections/talks2024.tex}
+%\itemizefile{sections/talks2023.tex}
+%\itemizefile{sections/talks2022.tex}
 
-%----------------------------------------------------------------------------------------
-%	SKILLS
-%----------------------------------------------------------------------------------------
-\section{Skills}
-\begin{tabularx}{\linewidth}{@{}l X@{}}
-Some Skills &  \normalsize{This, That, Some of this and that etc.}\\
-Some More Skills  &  \normalsize{Also some more of this, Some more that, And some of this and that etc.}\\  
-\end{tabularx}
+\section{Service}
+\itemizefile{sections/service.tex}
+
+\section{Press}
+\itemizefile{sections/press.tex}
+
+\section{Awards}
+\itemizefile{sections/awards.tex}
+
+\input{sections/publications}
+
+
+
+\input{sections/skills}
 
 \vfill
 \center{\footnotesize Last updated: \today}
