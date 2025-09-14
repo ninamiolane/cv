@@ -158,25 +158,27 @@
 
         % Prefer string-mapping (available in current LaTeX kernel)
         \cs_if_exist:NTF \ior_str_map_inline:Nn
+          % {
+          %   \ior_str_map_inline:Nn \l__svc_ior
+          %     {
+          %       % ##1 is a string line (no \par surprises)
+          %       \regex_match:nnTF { \A [\s\x{00A0}\x{202F}]* \Z } {##1}
+          %         { } % blank -> skip
+          %         { \item \tl_trim_spaces:n {##1} }
+          %     }
+          % }
+
           {
-            \ior_str_map_inline:Nn \l__svc_ior
-              {
-                % ##1 is a string line (no \par surprises)
-                \regex_match:nnTF { \A [\s\x{00A0}\x{202F}]* \Z } {##1}
-                  { } % blank -> skip
-                  { \item \tl_trim_spaces:n {##1} }
-              }
-          }
-          {
-            % Fallback for older kernels: convert tokens to a string first
-            \ior_map_inline:Nn \l__svc_ior
-              {
-                \tl_set:Nx \l__svc_line_tl { \tl_to_str:n {##1} }
-                \regex_match:nnTF { \A [\s\x{00A0}\x{202F}]* \Z } { \l__svc_line_tl }
-                  { } % blank -> skip
-                  { \item \tl_trim_spaces:V \l__svc_line_tl }
-              }
-          }
+  \ior_str_map_inline:Nn \l__svc_ior
+    {
+      % Trim spaces from the STRING line
+      \tl_set:Nx \l__svc_line_tl { \tl_trim_spaces:n {##1} }
+      % Skip if empty after trimming (no regex → no ## errors)
+      \tl_if_blank:VTF \l__svc_line_tl
+        { } % blank → skip
+        { \item \tl_use:N \l__svc_line_tl }
+    }
+}
 
         \ior_close:N \l__svc_ior
       \end{itemize}
