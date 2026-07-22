@@ -1,0 +1,303 @@
+%-----------------------------------------------------------------------------------------------------------------------------------------------%
+%	The MIT License (MIT)
+%
+%	Copyright (c) 2021 Jitin Nair
+%
+\documentclass[a4paper,12pt]{article}
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES
+%----------------------------------------------------------------------------------------
+\usepackage{url}
+\usepackage{parskip} 	
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{verbatim}
+\usepackage{xstring}
+
+%other packages for formatting
+\RequirePackage{color}
+\RequirePackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[scale=0.9]{geometry}
+
+%tabularx environment
+\usepackage{tabularx}
+
+%for lists within experience section
+\usepackage{enumitem}
+
+\usepackage{xparse}   % for \NewDocumentCommand (safe on older LaTeX)
+
+% centered version of 'X' col. type
+\newcolumntype{C}{>{\centering\arraybackslash}X} 
+
+%to prevent spillover of tabular into next pages
+\usepackage{supertabular}
+\usepackage{tabularx}
+\newlength{\fullcollw}
+\setlength{\fullcollw}{0.47\textwidth}
+
+%custom \section
+\usepackage{titlesec}				
+\usepackage{multicol}
+\usepackage{multirow}
+
+\usepackage{etoolbox} % for \ifblank
+
+%CV Sections inspired by: 
+%http://stefano.italians.nl/archives/26
+\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{10pt}{10pt}
+
+%for publications
+\usepackage[style=numeric,sorting=ydnt]{biblatex}
+% to print all authors
+\AtBeginBibliography{\renewcommand*{\finalnamedelim}{\addcomma\space}}
+\ExecuteBibliographyOptions{maxnames=99,minnames=99}
+% after loading biblatex
+\AtBeginBibliography{\raggedright}
+
+\newbool{ismentee}
+\newcommand*{\famtotest}{}
+\newcommand*{\testmentee}[1]{\IfStrEq{\famtotest}{#1}{\global\booltrue{ismentee}}{}}
+
+% keep the list on ONE line, no spaces after commas
+\newcommand*{\checkmentee}[1]{%
+  \global\boolfalse{ismentee}%
+  \def\famtotest{#1}%
+\forcsvlist{\testmentee}{Papillon,Myers,Acosta,Cornelis,Bertics,Kurtkaya,Kushner,Dinc,Mataigne,Sanborn,Koo,Klindt,Shewmake,Bernardez,Pereira,Utpala,Kunin,Langendonck,Montagna,Kunin*,Papillon*,Sanborn*,Bernardez*,Kurtkaya*,Dinc*}
+}
+
+\renewcommand*{\mkbibnamefamily}[1]{%
+  \IfStrEq{#1}{Miolane}%
+    {\textbf{#1}}%
+    {\IfStrEq{#1}{Miolane$^\dagger$}%
+      {\textbf{#1}}%
+      {\checkmentee{#1}%
+       \ifbool{ismentee}{\textbf{\textit{#1}}}{#1}}%
+    }%
+}
+
+% Talks
+\makeatletter
+
+\newenvironment{talks}
+  {\par\begin{itemize}[leftmargin=*,itemsep=0.1em,topsep=0.1em,parsep=0pt,partopsep=0pt]%
+   \def\verbatim@processline{%
+     \expandafter\@dotalk\expandafter{\the\verbatim@line}}%
+   \verbatim}
+  {\endverbatim
+   \end{itemize}}
+\makeatother
+
+\makeatletter
+
+\newcommand{\@dotalk}[1]{%
+  \StrBefore{#1}{. }[\TalkDate]%
+  \StrBehind{#1}{. }[\TalkRest]%
+  \StrBefore{\TalkRest}{.}[\TalkVenue]%
+  \StrBehind{\TalkRest}{. }[\TalkTitle]%
+  \IfEndWith{\TalkTitle}{.}{\StrGobbleRight{\TalkTitle}{1}[\TalkTitle]}{}%
+  \StrBefore{\TalkDate}{,}[\TalkYear]%
+  \StrBehind{\TalkDate}{, }[\TalkMD]%
+  \StrBefore{\TalkMD}{ }[\TalkMonth]%
+  \item \textbf{\TalkVenue}. \textit{\TalkTitle} (\TalkMonth\ \TalkYear).%
+}
+
+\newread\@talksread
+
+\def\@talksloop{%
+  \read\@talksread to \@talksline%
+  \edef\@talkstest{\@talksline}%
+  \unless\ifx\@talkstest\@empty%
+    \expandafter\@dotalk\expandafter{\@talksline}%
+  \fi%
+  \unless\ifeof\@talksread%
+    \expandafter\@talksloop%
+  \fi%
+}
+
+\newcommand{\talksfile}[1]{%
+  \begin{enumerate}[leftmargin=*,itemsep=0.1em,topsep=0.1em,parsep=0pt,partopsep=0pt]%
+  \begingroup%
+  \endlinechar=-1\relax%
+  \openin\@talksread=#1\relax%
+  \ifeof\@talksread\else%
+    \@talksloop%
+  \fi%
+  \closein\@talksread%
+  \endgroup%
+  \end{enumerate}%
+}
+
+\makeatother
+
+%Setup hyperref package, and colours for links
+\usepackage[unicode, draft=false]{hyperref}
+\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour}
+% \addbibresource{myrefs2022andbefore.bib,myrefs2023.bib,myrefs2024.bib,myrefs2025.bib,myrefspreprints.bib,myrefsinreview.bib}
+\addbibresource{myrefs2022andbefore.bib}
+\addbibresource{myrefs2023.bib}
+\addbibresource{myrefs2024.bib}
+\addbibresource{myrefs2025.bib}
+\addbibresource{myrefspreprints.bib}
+\addbibresource{myrefsinreview.bib}
+\setlength\bibitemsep{1em}
+\setlength{\biblabelsep}{2pt}
+
+%for social icons
+\usepackage{fontawesome5}
+
+
+% job listing environments
+\newenvironment{jobshort}[2]
+    {
+    \begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \textbf{#1} & \hfill &  #2 \\[3.75pt]
+    \end{tabularx}
+    }
+    {
+    }
+
+\newenvironment{joblong}[2]
+    {
+    \begin{tabularx}{\linewidth}{@{}l X r@{}}
+    \textbf{#1} & \hfill &  #2 \\[3.75pt]
+    \end{tabularx}
+    \begin{minipage}[t]{\linewidth}
+    \begin{itemize}[nosep,after=\strut, leftmargin=1em, itemsep=3pt,label=--]
+    }
+    {
+    \end{itemize}
+    \end{minipage}    
+    }
+
+
+
+%%%%% itemize
+
+\ExplSyntaxOn
+\ior_new:N \l__svc_ior
+\tl_new:N  \l__svc_line_tl
+
+% pattern: only whitespace (incl. NBSP/NNBSP) -> blank
+\cs_new:Npn \__svc_blank_p:n #1
+  {
+    \regex_match_p:nn { \A [\s\x{00A0}\x{202F}]* \Z } {#1}
+  }
+
+\cs_new_protected:Npn \__svc_itemize_file:n #1
+  {
+    \begingroup
+      \small
+      \begin{itemize}[leftmargin=*,itemsep=0.2em,topsep=0.2em,parsep=0pt,partopsep=0pt]
+        \ior_open:Nn \l__svc_ior {#1}
+
+        % Prefer string-mapping (available in current LaTeX kernel)
+        \cs_if_exist:NTF \ior_str_map_inline:Nn
+
+          {
+  \ior_str_map_inline:Nn \l__svc_ior
+    {
+      % Trim spaces from the STRING line
+      \tl_set:Nx \l__svc_line_tl { \tl_trim_spaces:n {##1} }
+      % Skip if empty after trimming (no regex → no ## errors)
+      \tl_if_blank:VTF \l__svc_line_tl
+        { } % blank → skip
+        { \item \tl_use:N \l__svc_line_tl }
+    }
+}
+        \relax
+        \ior_close:N \l__svc_ior
+      \end{itemize}
+    \endgroup
+  }
+
+% User macro
+\NewDocumentCommand{\itemizefile}{m}
+  { \__svc_itemize_file:n {#1} }
+\ExplSyntaxOff
+
+
+%----------------------------------------------------------------------------------------
+%	BEGIN DOCUMENT
+%----------------------------------------------------------------------------------------
+\begin{document}
+
+% non-numbered pages
+\pagestyle{empty} 
+
+%----------------------------------------------------------------------------------------
+%	TITLE
+%----------------------------------------------------------------------------------------
+\begin{tabularx}{\linewidth}{@{} C @{}}
+\huge{Dr. Nina Miolane} \\[7.5pt]
+I study the mathematical principles that enable intelligence in brains and machines.\\[7.5pt]
+\href{https://github.com/ninamiolane}{\raisebox{-0.05\height}\faGithub\ ninamiolane} \ $|$ \ 
+\href{https://linkedin.com/in/ninamiolane}{\raisebox{-0.05\height}\faLinkedin\ ninamiolane} \ $|$ \ 
+\href{https://x.com/ninamiolane}{\raisebox{-0.05\height}\faTwitter\ @ninamiolane} \ $|$ \
+\href{https://bsky.app/profile/ninamiolane.bsky.social}{\raisebox{-0.05\height}\faGlobe\ @ninamiolane.bsky.social} \ ~~~ \
+\href{https://ninamiolane.com}{\raisebox{-0.05\height}\faGlobe~\ ninamiolane.com} \ $|$ \ 
+\href{mailto:ninamiolane@ucsb.edu}{\raisebox{-0.05\height}\faEnvelope \ ninamiolane@ucsb.edu} \ $|$ \ 
+\href{tel:+1452441603}{\raisebox{-0.05\height}\faMobile \ +1.415.244.1603} \\
+\end{tabularx}
+
+%----------------------------------------------------------------------------------------
+
+\section{Summary}
+\textbf{My research sits at the intersection of mathematics, artificial intelligence, and neuroscience.} I use mathematics to unify the study of intelligence in brains and machines. In neuroscience, we still do not know how large populations of neurons give rise to perception, memory, and learning. In AI/ML, we face significant challenges to understand systems of our own making, leaving them hard to control and trust. My hypothesis is that we lack appropriate mathematics that reveals the principles of intelligence in brains and machines. My research develops the missing framework, uses it to formalize a theory of intelligence across substrates, and builds it into novel artificial neural networks to deliver superior performance without necessarily scaling data, parameters, or compute.
+
+%----------------------------------------------------------------------------------------
+%	SECTIONS
+%----------------------------------------------------------------------------------------
+\section{Education}
+\input{sections/01_education}
+
+\section{Work Experience}
+\input{sections/02_work_experience}
+
+\section{Selected Grants and Gifts}
+\input{sections/03_grants}
+
+\section{Selected Awards}
+\input{sections/04_awards}
+
+\section{Publications}
+\input{sections/05_publications}
+
+\section{Patents}
+\begin{itemize}[leftmargin=*,itemsep=0.1em,topsep=0.2em,parsep=0pt,partopsep=0pt]
+  \item Hajij, Alzamzmi, and \textbf{Miolane}. ``Multimodal cell complex neural networks for prediction of multiple drug side effects severity and frequency," U.S. Patent 12051512 (2024).
+  \item Cadieu, Hong, Koepsell, Mathe, Poilvert, Cannon, Romano, Bilenko, Chen, and \textbf{Miolane}. ``Video clip selector for medical imaging and diagnosis," U.S. Patent  10631791 (2020). Continuations 11166678, 11497451.
+\end{itemize}
+
+\section{Open-source Software}
+\input{sections/06_opensource}
+
+\section{Talks}
+\input{sections/07_talks}
+
+\section{Mentoring}
+\input{sections/08_mentoring}
+
+\section{Teaching}
+\input{sections/09_teaching}
+
+\section{Service}
+\input{sections/10_service}
+
+\section{Outreach}
+\input{sections/11_outreach}
+
+\section{Press \& Media}
+\input{sections/12_press}
+
+% \section{Miscellaneous}
+% \input{sections/misc}
+
+\vfill
+\center{\footnotesize Last updated: \today}
+
+\end{document}
